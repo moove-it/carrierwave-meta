@@ -18,6 +18,7 @@ module CarrierWave
       model_delegate_attribute :image_size, []
       model_delegate_attribute :width, 0
       model_delegate_attribute :height, 0
+      model_delegate_attribute :density, 0
       model_delegate_attribute :md5sum, ''
     end
 
@@ -25,6 +26,9 @@ module CarrierWave
       if self.file.present?
         dimensions = get_dimensions
         width, height = dimensions
+        density, unit = get_density
+
+        self.density = density
         self.content_type = self.file.content_type
         self.file_size = self.file.size
         self.image_size = dimensions
@@ -48,24 +52,18 @@ module CarrierWave
       store_meta if self.model.nil? || (self.model.respond_to?(:new_record?) && self.model.new_record?)
     end
 
+    def get_density
+      density, unit = `identify -format "%y" #{self.file.path}`.split(' ')
+
+      return density, unit
+    end
+
     def get_dimensions
       [].tap do |size|
         if self.file.content_type =~ /image|postscript|pdf/
-          manipulate! do |img|
-            if defined?(::Magick::Image) && img.is_a?(::Magick::Image)
-              size << img.columns
-              size << img.rows
-            elsif defined?(::MiniMagick::Image) && img.is_a?(::MiniMagick::Image)
-              size << img["width"]
-              size << img["height"]
-            elsif defined?(::Sorcery) && img.is_a?(::Sorcery)
-              size << img.dimensions[:x].to_i
-              size << img.dimensions[:y].to_i
-            else
-              raise "Only RMagick, MiniMagick, and ImageSorcery are supported yet. Fork and update it."
-            end
-            img
-          end
+          width, height = `identify -format "%wx%h" #{self.file.path}`.split('x')
+          size << width
+          size << height
         end
       end
     rescue CarrierWave::ProcessingError
