@@ -26,9 +26,8 @@ module CarrierWave
       if self.file.present?
         dimensions = get_dimensions
         width, height = dimensions
-        density, unit = get_density
 
-        self.density = density
+        self.density = get_density
         self.content_type = self.file.content_type
         self.file_size = self.file.size
         self.image_size = dimensions
@@ -53,9 +52,14 @@ module CarrierWave
     end
 
     def get_density
-      density, unit = `identify -format "%y" #{self.file.path}`.split(' ')
+      density_x_and_unit, density_y_and_unit = `identify -format "%yx%y" #{self.file.path}`.split('x')
+      density_x, _ = density_x_and_unit.split(' ')
+      density_y, _ = density_y_and_unit.split(' ')
 
-      return density, unit
+      density_x = 72 if density_x == 0
+      density_y = 72 if density_y == 0
+
+      return [density_x, density_y]
     end
 
     def get_dimensions
