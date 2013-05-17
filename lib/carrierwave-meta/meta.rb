@@ -56,8 +56,8 @@ module CarrierWave
       density_x, _ = density_x_and_unit.split(' ')
       density_y, _ = density_y_and_unit.split(' ')
 
-      density_x = 72 if density_x == 0
-      density_y = 72 if density_y == 0
+      density_x = 72 if density_x.to_i == 0
+      density_y = 72 if density_y.to_i == 0
 
       return [density_x, density_y].join('x')
     end
