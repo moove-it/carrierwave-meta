@@ -18,7 +18,7 @@ module CarrierWave
       model_delegate_attribute :image_size, []
       model_delegate_attribute :width, 0
       model_delegate_attribute :height, 0
-      model_delegate_attribute :density, 0
+      model_delegate_attribute :density, ''
       model_delegate_attribute :md5sum, ''
     end
 
@@ -59,7 +59,7 @@ module CarrierWave
       density_x = 72 if density_x == 0
       density_y = 72 if density_y == 0
 
-      return [density_x, density_y]
+      return [density_x, density_y].join('x')
     end
 
     def get_dimensions
